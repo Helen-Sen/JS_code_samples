@@ -1,6 +1,6 @@
-const xlsxUtil = require("./xlsx_util.js");
+const xlsxIO = require("./xlsx_io.js");
 
-const data = xlsxUtil.getXlsxData();
+const data = xlsxIO.getXlsxData();
 
 function search(pattern) {
   const regex = new RegExp(pattern.replace(/\*/g, ".*"), "i");
@@ -15,7 +15,7 @@ function searchOr(pattern1, pattern2) {
   const regex1 = new RegExp(pattern1.replace(/\*/g, ".*"), "i");
   const regex2 = new RegExp(pattern2.replace(/\*/g, ".*"), "i");
   const searchResult = data.filter((item) => regex1.test(item.Title) || regex2.test(item.Title));
-  xlsxUtil.writeXlsxData(searchResult, "Rule_OR");
+  xlsxIO.writeXlsxData(searchResult, "Rule_OR");
 }
 searchOr("motor", "vehicle");
 
@@ -25,17 +25,17 @@ function searchAnd(pattern1, pattern2) {
   const regex1 = new RegExp(pattern1.replace(/\*/g, ".*"), "i");
   const regex2 = new RegExp(pattern2.replace(/\*/g, ".*"), "i");
   const searchResult = data.filter((item) => regex1.test(item.Title) && regex2.test(item.Title));
-  xlsxUtil.writeXlsxData(searchResult, "Rule_AND");
+  xlsxIO.writeXlsxData(searchResult, "Rule_AND");
 }
 searchAnd("motor", "vehicle");
 
 // // Test 4: Rule_NOT 
-// function searchNot(pattern) {
-//   const regex = new RegExp(pattern.replace(/[*?%_]/g, ".*"), "i");
-//   const searchResult = data.filter((item) => !regex.test(item.Title));
-//    xlsxUtil.writeXlsxData(searchResult, "Rule_NOT");
-// }
-// searchNot("compressor");
+function searchNot(pattern) {
+  const regex = new RegExp(pattern.replace(/[*?%_]/g, ".*"), "i");
+  const searchResult = data.filter((item) => !regex.test(item.Title));
+   xlsxIO.writeXlsxData(searchResult, "Rule_NOT");
+}
+searchNot("compressor");
 
 // // Test 5: Rule_NEAR[n]
 // function searchNear(pattern1, pattern2, n) {
@@ -47,6 +47,6 @@ searchAnd("motor", "vehicle");
 //     const index2 = words.indexOf(pattern2.toLowerCase());
 //     return Math.abs(index1 - index2) <= n;
 //   });
-//    xlsxUtil.writeXlsxData(searchResult, "Rule_NEAR[n]");
+//    xlsxIO.writeXlsxData(searchResult, "Rule_NEAR[n]");
 // }
 // searchNear();

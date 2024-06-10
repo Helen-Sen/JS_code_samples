@@ -2,51 +2,154 @@ const xlsxIO = require("./xlsx_io.js");
 
 const data = xlsxIO.getXlsxData();
 
-function search(pattern) {
-  const regex = new RegExp(pattern.replace(/\*/g, ".*"), "i");
-  return data.filter((item) => regex.test(item.Title));
-}
+// Rule_AND
+searchAnd("motor", "vehicle");
 
-// Test 1: motor*
-// console.log("Test 2:", search("motor*"));
-
-// Test 2: Rule_OR
-function searchOr(pattern1, pattern2) {
-  const regex1 = new RegExp(pattern1.replace(/\*/g, ".*"), "i");
-  const regex2 = new RegExp(pattern2.replace(/\*/g, ".*"), "i");
-  const searchResult = data.filter((item) => regex1.test(item.Title) || regex2.test(item.Title));
-  xlsxIO.writeXlsxData(searchResult, "Rule_OR");
-}
+// Rule_OR
 searchOr("motor", "vehicle");
 
+// Rule_NOT
+searchNot("compressor");
 
-// Test 3: Rule_AND
+// Rule_NEAR[n]
+searchNear("dental", "material", 3);
+
+// Rule_SEQ[n]
+searchSeq("dental", "material", 3);
+
+// Rule_Space
+searchSpace("dental material");
+
+// Rule_wildcard(*)
+searchWildcard("Singl* compressor");
+
+// Rule_wildcard(?)
+searchWildcardSingle("Singl?-screw compressor");
+
+// Rule_wildcard (%)
+searchWildcardPercent("blank%");
+
+// Rule_wildcard (_)
+searchWildcardUnderscore("Single_screw_compressor");
+
+// Rule_to search using the literal phrase rule (" ")
+searchLiteralPhrase("method and device");
+
+// Rule_grouping: dental AND (method OR material)
+searchOrRuleGroup("dental", "method", "material");
+
 function searchAnd(pattern1, pattern2) {
-  const regex1 = new RegExp(pattern1.replace(/\*/g, ".*"), "i");
-  const regex2 = new RegExp(pattern2.replace(/\*/g, ".*"), "i");
+  const regex1 = new RegExp(pattern1.concat("\\W?"), "i");
+  const regex2 = new RegExp(pattern2.concat("\\W?"), "i");
   const searchResult = data.filter((item) => regex1.test(item.Title) && regex2.test(item.Title));
   xlsxIO.writeXlsxData(searchResult, "Rule_AND");
 }
-searchAnd("motor", "vehicle");
 
-// // Test 4: Rule_NOT 
+function searchOr(pattern1, pattern2) {
+  const regex1 = new RegExp(pattern1.concat("\\W?"), "i");
+  const regex2 = new RegExp(pattern2.concat("\\W?"), "i");
+  // console.log(regex1, regex2);
+  const searchResult = data.filter((item) => regex1.test(item.Title) || regex2.test(item.Title));
+  xlsxIO.writeXlsxData(searchResult, "Rule_OR");
+}
+
 function searchNot(pattern) {
   const regex = new RegExp(pattern.replace(/[*?%_]/g, ".*"), "i");
   const searchResult = data.filter((item) => !regex.test(item.Title));
-   xlsxIO.writeXlsxData(searchResult, "Rule_NOT");
+  xlsxIO.writeXlsxData(searchResult, "Rule_NOT");
 }
-searchNot("compressor");
 
-// // Test 5: Rule_NEAR[n]
-// function searchNear(pattern1, pattern2, n) {
-//   const regex1 = new RegExp(pattern1.replace(/[*?%_]/g, ".*"), "i");
-//   const regex2 = new RegExp(pattern2.replace(/[*?%_]/g, ".*"), "i");
-//   const searchResult = data.filter((item) => {
-//     const words = item.Title.toLowerCase().split(/\s+/);
-//     const index1 = words.indexOf(pattern1.toLowerCase());
-//     const index2 = words.indexOf(pattern2.toLowerCase());
-//     return Math.abs(index1 - index2) <= n;
-//   });
-//    xlsxIO.writeXlsxData(searchResult, "Rule_NEAR[n]");
-// }
-// searchNear();
+function searchNear(pattern1, pattern2, n) {
+  const searchResult = data.filter((item) => {
+    const words = item.Title.toLowerCase().split(/\s+/);
+    const indices1 = words.reduce((acc, word, idx) => {
+      if (word === pattern1.toLowerCase()) acc.push(idx);
+      return acc;
+    }, []);
+    const indices2 = words.reduce((acc, word, idx) => {
+      if (word === pattern2.toLowerCase()) acc.push(idx);
+      return acc;
+    }, []);
+    for (let i = 0; i < indices1.length; i++) {
+      for (let j = 0; j < indices2.length; j++) {
+        if (Math.abs(indices1[i] - indices2[j]) <= n) {
+          return true;
+        }
+      }
+    }
+    return false;
+  });
+  xlsxIO.writeXlsxData(searchResult, "Rule_NEAR");
+}
+
+function searchSeq(pattern1, pattern2, n) {
+  const searchResult = data.filter((item) => {
+    const words = item.Title.toLowerCase().split(/\s+/);
+    const len = words.length;
+    for (let i = 0; i < len; i++) {
+      if (words[i] === pattern1.toLowerCase()) {
+        for (let j = 1; j <= n + 1; j++) {
+          if (i + j < len && words[i + j] === pattern2.toLowerCase()) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  });
+  xlsxIO.writeXlsxData(searchResult, "Rule_SEQ");
+}
+
+function searchSpace(phrase) {
+  const regex = new RegExp(`\\b${phrase}\\b`, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Space");
+}
+
+function searchWildcard(pattern) {
+  const regexPattern = pattern.replace(/\*/g, ".*");
+  const regex = new RegExp(regexPattern, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Wildcard");
+}
+
+function searchWildcardSingle(pattern) {
+  const regexPattern = pattern.replace(/\?/g, ".");
+  const regex = new RegExp(regexPattern, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Wildcard_Single");
+}
+
+function searchWildcardPercent(pattern) {
+  const regexPattern = pattern.replace(/%/g, ".{0,1}");
+  const regex = new RegExp(regexPattern, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Wildcard_Percent");
+}
+
+function searchWildcardUnderscore(pattern) {
+  const regexPattern = pattern.replace(/_/g, "(?:\\s?)");
+  const regex = new RegExp(regexPattern, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Wildcard_Underscore");
+}
+
+function searchLiteralPhrase(phrase) {
+  const regex = new RegExp(`\\b${phrase}\\b`, "i");
+  const searchResult = data.filter((item) => regex.test(item.Title));
+
+  xlsxIO.writeXlsxData(searchResult, "Rule_Literal_Phrase");
+}
+
+function searchOrRuleGroup(pattern1, pattern2, pattern3) {
+  const regex1 = new RegExp(pattern1.concat("\\W?"), "i");
+  const regex2 = new RegExp(pattern2.concat("\\W?"), "i");
+  const regex3 = new RegExp(pattern3.concat("\\W?"), "i");
+  const searchResult = data.filter((item) => regex1.test(item.Title) && (regex2.test(item.Title) || regex3.test(item.Title)));
+  xlsxIO.writeXlsxData(searchResult, "Rule_Grouping");
+}

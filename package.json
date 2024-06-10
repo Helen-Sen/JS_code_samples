@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/Helen-Sen/JS_code_samples/issues"
   },
-  "homepage": "https://github.com/Helen-Sen/JS_code_samples#readme"
+  "homepage": "https://github.com/Helen-Sen/JS_code_samples#readme",
+  "dependencies": {
+    "chai": "^5.1.1",
+    "mocha": "^10.4.0",
+    "xlsx": "^0.18.5"
+  }
 }

@@ -6,4 +6,8 @@ module.exports = class Cat extends Animal {
     this.name = name;
     this.age = age;
   }
+  alarm() {
+    console.log("Cat's alarm");
+    // super.alarm();
+  }
 };

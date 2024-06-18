@@ -11,21 +11,7 @@ module.exports = class Animal {
     this.voice = voice;
   }
 
-  getType() {
-    return this.type;
-  }
 
-  getName() {
-    return this.name;
-  }
-
-  getAge() {
-    return this.age;
-  }
-
-  getVoice() {
-    return this.voice;
-  }
 
   getInfo() {
     console.log("-----------------------------------");
@@ -34,9 +20,6 @@ module.exports = class Animal {
     console.log("-----------------------------------");
   }
 
-  setAge(age) {
-    this.age = age;
-  }
 
   alarm() {
     console.log(`${capitalizeFirstChar(this.type)} ${this.name} sees something dangerous!!!`);

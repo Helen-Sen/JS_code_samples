@@ -6,4 +6,8 @@ module.exports = class Dog extends Animal {
     this.name = name;
     this.age = age;
   }
+  emotion() {
+    super.emotion();
+    console.log(`${this.name} wags its tail.`);
+  }
 };

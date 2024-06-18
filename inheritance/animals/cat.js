@@ -10,4 +10,8 @@ module.exports = class Cat extends Animal {
     console.log("Cat's alarm");
     // super.alarm();
   }
+  emotion() { 
+    super.emotion();
+    console.log(`${this.name} purrs.`);
+  }
 };

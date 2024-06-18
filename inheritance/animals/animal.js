@@ -25,6 +25,10 @@ module.exports = class Animal {
     console.log(`${capitalizeFirstChar(this.type)} ${this.name} sees something dangerous!!!`);
     console.log(`${capitalizeFirstChar(this.voice)}, ${this.voice}, ${this.voice}!!!`);
   }
+
+  emotion() {
+    console.log(`${capitalizeFirstChar(this.type)} ${this.name} feels happy)))`);    
+  }
 };
 
 function capitalizeFirstChar(str) {
